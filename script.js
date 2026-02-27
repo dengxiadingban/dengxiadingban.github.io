@@ -128,7 +128,7 @@ function payWithMethod(method) {
     })
     .then(response => {
         if (!response.ok) {
-            throw new Error('网络请求失败');
+            throw new Error('网络请求失败: ' + response.status);
         }
         return response.json();
     })
@@ -136,6 +136,16 @@ function payWithMethod(method) {
         // 移除加载提示
         const loading = document.getElementById('loadingMsg');
         if (loading) loading.remove();
+        
+        // 调试信息：打印返回的数据
+        console.log('Worker返回数据:', data);
+        
+        if (data.debug) {
+            console.log('调试信息:');
+            console.log('- 签名字符串:', data.debug.signString);
+            console.log('- 签名值:', data.debug.sign);
+            console.log('- 参数:', data.debug.params);
+        }
         
         if (data.success && data.payUrl) {
             // 保存订单信息到localStorage
@@ -147,9 +157,12 @@ function payWithMethod(method) {
                 timestamp: Date.now()
             }));
             
+            console.log('即将跳转到支付页面:', data.payUrl);
+            
             // 跳转到支付页面
             window.location.href = data.payUrl;
         } else {
+            console.error('支付请求失败:', data);
             alert('支付请求失败：' + (data.error || '未知错误'));
         }
     })
@@ -159,7 +172,7 @@ function payWithMethod(method) {
         if (loading) loading.remove();
         
         console.error('支付请求错误:', error);
-        alert('支付请求失败，请检查网络连接或稍后重试');
+        alert('支付请求失败，请检查网络连接或稍后重试\n错误信息: ' + error.message);
     });
 }
 
