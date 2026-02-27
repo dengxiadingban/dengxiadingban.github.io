@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>商务咨询服务 - 灯下鼎办</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 企业介绍部分 -->
+        <section class="company-intro">
+            <div class="intro-content">
+                <h1 class="company-title">灯下鼎办商务咨询服务部</h1>
+                <p class="company-slogan">您身边的商务管家，助力企业成长</p>
+                <div class="intro-text">
+                    <p>我们是一家专注于为中小企业和个体工商户提供全方位商务咨询服务的专业机构。</p>
+                    <p>凭借丰厚的行业经验和专业知识，我们致力于为客户提供高效、专业、贴心的一站式商务解决方案。</p>
+                    <div class="features">
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>专业团队</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>快速响应</span>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-icon">✓</span>
+                            <span>贴心服务</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 付费服务部分 -->
+        <section class="services">
+            <h2 class="section-title">我们的服务</h2>
+            <div class="service-cards">
+                <!-- 服务1 -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <h3>个体工商户业务咨询</h3>
+                        <div class="price">¥19.9</div>
+                    </div>
+                    <div class="service-body">
+                        <ul class="service-list">
+                            <li>个体工商户注册流程指导</li>
+                            <li>经营范围选择建议</li>
+                            <li>税务登记咨询</li>
+                            <li>日常经营问题解答</li>
+                        </ul>
+                    </div>
+                    <button class="buy-btn" onclick="handlePurchase('个体工商户业务咨询', 19.9, 'service1')">立即购买</button>
+                </div>
+
+                <!-- 服务2 -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <h3>公司业务咨询</h3>
+                        <div class="price">¥39.9</div>
+                    </div>
+                    <div class="service-body">
+                        <ul class="service-list">
+                            <li>公司注册全流程指导</li>
+                            <li>公司类型选择建议</li>
+                            <li>股权结构设计咨询</li>
+                            <li>公司治理问题解答</li>
+                            <li>年检年报指导</li>
+                        </ul>
+                    </div>
+                    <button class="buy-btn" onclick="handlePurchase('公司业务咨询', 39.9, 'service2')">立即购买</button>
+                </div>
+
+                <!-- 服务3 -->
+                <div class="service-card">
+                    <div class="service-header">
+                        <h3>代理记账与网站备案</h3>
+                        <div class="price">¥99.9</div>
+                    </div>
+                    <div class="service-body">
+                        <ul class="service-list">
+                            <li>代理记账服务咨询</li>
+                            <li>税务申报指导</li>
+                            <li>网站ICP备案流程</li>
+                            <li>公安备案指导</li>
+                            <li>财务报表解读</li>
+                        </ul>
+                    </div>
+                    <button class="buy-btn" onclick="handlePurchase('代理记账与网站备案', 99.9, 'service3')">立即购买</button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- 支付弹窗 -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePaymentModal()">&times;</span>
+            <h3 id="modalTitle">选择支付方式</h3>
+            <p id="modalService"></p>
+            <p id="modalPrice"></p>
+            <div class="payment-methods">
+                <button class="payment-btn wechat" onclick="payWithMethod('wechat')">
+                    <span class="payment-icon">💚</span>
+                    微信支付
+                </button>
+                <button class="payment-btn alipay" onclick="payWithMethod('alipay')">
+                    <span class="payment-icon">💙</span>
+                    支付宝支付
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 支付成功弹窗 -->
+    <div id="successModal" class="modal">
+        <div class="modal-content success-content">
+            <div class="success-icon">✓</div>
+            <h3>支付成功！</h3>
+            <div class="success-info">
+                <p class="info-label">您的服务密钥：</p>
+                <div class="key-box" id="serviceKey"></div>
+                <p class="info-label">客服QQ号：</p>
+                <div class="qq-box">123456789</div>
+                <div class="instructions">
+                    <p>请添加客服QQ并发送您的密钥，我们将立即为您提供服务。</p>
+                    <p class="note">请妥善保管您的密钥，这是您享受服务的凭证。</p>
+                </div>
+            </div>
+            <button class="confirm-btn" onclick="closeSuccessModal()">我知道了</button>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h4>灯下鼎办商务咨询服务部</h4>
+                <p>专业 · 高效 · 贴心</p>
+            </div>
+            <div class="footer-section">
+                <p>联系我们</p>
+                <p>客服QQ：2871431784</p>
+                <p>工作时间：9:00-17:00</p>
+            </div>
+            <div class="footer-section">
+                <p>服务范围</p>
+                <p>个体工商户咨询</p>
+                <p>公司业务咨询</p>
+                <p>代理记账与备案</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 灯下鼎办商务咨询服务部(个体工商户) All Rights Reserved</p>
+            <p>京ICP备12345678号</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
+

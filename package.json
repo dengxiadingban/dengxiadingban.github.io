@@ -1,0 +1,13 @@
+{
+  "name": "business-consulting-payment",
+  "version": "1.0.0",
+  "description": "Cloudflare Worker for payment signature",
+  "main": "worker.js",
+  "scripts": {
+    "deploy": "wrangler publish"
+  },
+  "keywords": ["cloudflare", "worker", "payment"],
+  "author": "",
+  "license": "MIT"
+}
+

@@ -1,0 +1,549 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-green: #a8e6cf;
+    --secondary-green: #dcedc8;
+    --accent-green: #81c784;
+    --dark-green: #66bb6a;
+    --light-bg: #f1f8f4;
+    --text-dark: #2e7d32;
+    --text-light: #4a4a4a;
+    --white: #ffffff;
+    --shadow: rgba(129, 199, 132, 0.2);
+}
+
+body {
+    font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    background: linear-gradient(135deg, var(--light-bg) 0%, var(--secondary-green) 100%);
+    color: var(--text-light);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* 企业介绍部分 */
+.company-intro {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 60px 40px;
+    margin-bottom: 60px;
+    box-shadow: 0 10px 40px var(--shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.company-intro::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, var(--primary-green) 0%, transparent 70%);
+    opacity: 0.3;
+    border-radius: 50%;
+}
+
+.intro-content {
+    position: relative;
+    z-index: 1;
+}
+
+.company-title {
+    font-size: 3em;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.company-slogan {
+    font-size: 1.4em;
+    color: var(--accent-green);
+    margin-bottom: 30px;
+    font-weight: 500;
+}
+
+.intro-text p {
+    font-size: 1.1em;
+    margin-bottom: 15px;
+    color: var(--text-light);
+}
+
+.features {
+    display: flex;
+    gap: 30px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
+.feature-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.1em;
+    color: var(--text-dark);
+    font-weight: 500;
+}
+
+.feature-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: var(--accent-green);
+    color: var(--white);
+    border-radius: 50%;
+    font-weight: bold;
+}
+
+/* 服务部分 */
+.services {
+    margin-bottom: 40px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2.5em;
+    color: var(--text-dark);
+    margin-bottom: 50px;
+    font-weight: 700;
+}
+
+.service-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.service-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 35px;
+    box-shadow: 0 8px 30px var(--shadow);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.service-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--accent-green), var(--dark-green));
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 50px var(--shadow);
+}
+
+.service-card:hover::before {
+    transform: scaleX(1);
+}
+
+.service-card.featured {
+    border: 2px solid var(--accent-green);
+    transform: scale(1.05);
+}
+
+.badge {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: var(--dark-green);
+    color: var(--white);
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+}
+
+.service-header {
+    margin-bottom: 25px;
+}
+
+.service-header h3 {
+    font-size: 1.5em;
+    color: var(--text-dark);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.price {
+    font-size: 2.2em;
+    color: var(--dark-green);
+    font-weight: 700;
+}
+
+.service-body {
+    margin-bottom: 30px;
+}
+
+.service-list {
+    list-style: none;
+    padding: 0;
+}
+
+.service-list li {
+    padding: 10px 0;
+    padding-left: 25px;
+    position: relative;
+    color: var(--text-light);
+}
+
+.service-list li::before {
+    content: '●';
+    position: absolute;
+    left: 0;
+    color: var(--accent-green);
+    font-size: 1.2em;
+}
+
+.buy-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--accent-green), var(--dark-green));
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.buy-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px var(--shadow);
+}
+
+/* 弹窗样式 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 10% auto;
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    animation: slideIn 0.3s ease;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.close {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    font-size: 28px;
+    font-weight: bold;
+    color: var(--text-light);
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: var(--text-dark);
+}
+
+#modalTitle {
+    color: var(--text-dark);
+    font-size: 1.8em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#modalService, #modalPrice {
+    text-align: center;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+    color: var(--text-light);
+}
+
+#modalPrice {
+    font-size: 1.5em;
+    color: var(--dark-green);
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.payment-btn {
+    padding: 18px;
+    border: 2px solid var(--accent-green);
+    border-radius: 10px;
+    font-size: 1.2em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.payment-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px var(--shadow);
+}
+
+.payment-btn.wechat {
+    color: #09bb07;
+    border-color: #09bb07;
+}
+
+.payment-btn.wechat:hover {
+    background: #09bb07;
+    color: var(--white);
+}
+
+.payment-btn.alipay {
+    color: #1677ff;
+    border-color: #1677ff;
+}
+
+.payment-btn.alipay:hover {
+    background: #1677ff;
+    color: var(--white);
+}
+
+.payment-icon {
+    font-size: 1.5em;
+}
+
+/* 支付成功弹窗 */
+.success-content {
+    text-align: center;
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--dark-green);
+    color: var(--white);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3em;
+    margin: 0 auto 20px;
+    animation: scaleIn 0.5s ease;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.success-content h3 {
+    color: var(--text-dark);
+    font-size: 2em;
+    margin-bottom: 30px;
+}
+
+.success-info {
+    background: var(--light-bg);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+}
+
+.info-label {
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+.key-box, .qq-box {
+    background: var(--white);
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 1.3em;
+    font-weight: 700;
+    color: var(--dark-green);
+    margin-bottom: 20px;
+    border: 2px dashed var(--accent-green);
+    letter-spacing: 2px;
+}
+
+.instructions {
+    margin-top: 20px;
+    text-align: left;
+}
+
+.instructions p {
+    margin-bottom: 10px;
+    color: var(--text-light);
+}
+
+.note {
+    color: var(--accent-green);
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.confirm-btn {
+    padding: 15px 50px;
+    background: linear-gradient(135deg, var(--accent-green), var(--dark-green));
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.confirm-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 20px var(--shadow);
+}
+
+/* 页脚样式 */
+.footer {
+    background: linear-gradient(135deg, var(--text-dark), var(--dark-green));
+    color: var(--white);
+    padding: 50px 20px 20px;
+    margin-top: 80px;
+}
+
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-section h4 {
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.footer-section p {
+    margin-bottom: 10px;
+    opacity: 0.9;
+    line-height: 1.8;
+}
+
+.footer-bottom {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+.footer-bottom p {
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
+.footer-bottom a {
+    color: var(--white);
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+
+.footer-bottom a:hover {
+    opacity: 0.7;
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .company-title {
+        font-size: 2em;
+    }
+    
+    .company-slogan {
+        font-size: 1.1em;
+    }
+    
+    .section-title {
+        font-size: 2em;
+    }
+    
+    .service-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .service-card.featured {
+        transform: scale(1);
+    }
+    
+    .features {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .footer-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .footer {
+        padding: 40px 20px 20px;
+        margin-top: 60px;
+    }
+}
+
