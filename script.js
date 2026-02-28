@@ -5,7 +5,7 @@ const EPAY_CONFIG = {
     // 支付成功回调地址
     returnUrl: window.location.href,
     // Cloudflare Worker API地址（部署后替换为您的Worker地址）
-    apiUrl: 'https://business-consulting-payment.dengxia.workers.dev'
+    apiUrl: 'https://proud-bear-42.test228.deno.net'
 };
 
 // 客服QQ号配置

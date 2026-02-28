@@ -1,0 +1,6 @@
+*.env
+.env
+*.md
+.md
+worker.js
+deno_worker.ts
