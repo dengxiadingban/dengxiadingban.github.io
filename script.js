@@ -1,317 +1,329 @@
-// 易支付配置（Cloudflare Workers模式）
+// ============================================================
+// 易支付配置
+// key 通过 config.js 注入（部署时由构建脚本或手动维护）
+// config.js 格式：window.EPAY_KEY = 'your_real_key';
+// ============================================================
 const EPAY_CONFIG = {
-    // 请替换为您的易支付商户ID（公开信息，可以暴露）
-    pid: '1013',
-    // 支付成功回调地址
-    returnUrl: window.location.href,
-    // Cloudflare Worker API地址（部署后替换为您的Worker地址）
-    apiUrl: 'https://proud-bear-42.test228.deno.net'
+  apiUrl:    'https://epay.aceyun.cn',
+  pid:       '1013',
+  get key()  { return (window.EPAY_KEY || ''); },
+  notifyUrl: window.location.origin + '/notify_success.txt',
+  returnUrl: window.location.href.split('?')[0]
 };
 
-// 客服QQ号配置
-const CUSTOMER_QQ = '2871431784';
+const CUSTOMER_QQ   = '2871431784';
+let   currentOrder  = null;
+let   pollTimer     = null;
+let   pollCount     = 0;
+const POLL_MAX       = 72;    // 72 次 x 5s = 6 分钟
+const POLL_INTERVAL  = 5000;
 
-// 当前订单信息
-let currentOrder = {
-    serviceName: '',
-    price: 0,
-    serviceId: ''
-};
-
-// 密钥生成算法
-function generateServiceKey(orderId, serviceName, timestamp, price) {
-    // 使用自定义算法生成密钥
-    // 这个算法结合了订单信息和时间戳，确保唯一性
-    
-    // 第一步：创建基础字符串
-    const baseString = `${orderId}-${serviceName}-${timestamp}-${price}`;
-    
-    // 第二步：使用自定义哈希算法
-    let hash = 0;
-    for (let i = 0; i < baseString.length; i++) {
-        const char = baseString.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // 转换为32位整数
+// ============================================================
+// MD5 纯JS实现
+// ============================================================
+function md5(str) {
+  function safeAdd(x, y) {
+    const lsw = (x & 0xffff) + (y & 0xffff);
+    const msw = (x >> 16) + (y >> 16) + (lsw >> 16);
+    return (msw << 16) | (lsw & 0xffff);
+  }
+  function rol(n, c) { return (n << c) | (n >>> (32 - c)); }
+  function cmn(q, a, b, x, s, t) { return safeAdd(rol(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
+  function ff(a,b,c,d,x,s,t){ return cmn((b&c)|(~b&d),a,b,x,s,t); }
+  function gg(a,b,c,d,x,s,t){ return cmn((b&d)|(c&~d),a,b,x,s,t); }
+  function hh(a,b,c,d,x,s,t){ return cmn(b^c^d,a,b,x,s,t); }
+  function ii(a,b,c,d,x,s,t){ return cmn(c^(b|~d),a,b,x,s,t); }
+  function s2b(s) {
+    const bin = [], mask = 0xff;
+    for (let i = 0; i < s.length * 8; i += 8)
+      bin[i >> 5] |= (s.charCodeAt(i / 8) & mask) << (i % 32);
+    return bin;
+  }
+  function b2h(b) {
+    const t = '0123456789abcdef'; let s = '';
+    for (let i = 0; i < b.length * 4; i++)
+      s += t[(b[i>>2] >> (i%4*8+4)) & 0xf] + t[(b[i>>2] >> (i%4*8)) & 0xf];
+    return s;
+  }
+  function core(x, len) {
+    x[len >> 5] |= 0x80 << (len % 32);
+    x[((len + 64) >>> 9 << 4) + 14] = len;
+    let a=1732584193, b=-271733879, c=-1732584194, d=271733878;
+    for (let i = 0; i < x.length; i += 16) {
+      const oa=a, ob=b, oc=c, od=d;
+      a=ff(a,b,c,d,x[i+0], 7,-680876936);  d=ff(d,a,b,c,x[i+1],12,-389564586);
+      c=ff(c,d,a,b,x[i+2],17, 606105819);  b=ff(b,c,d,a,x[i+3],22,-1044525330);
+      a=ff(a,b,c,d,x[i+4], 7,-176418897);  d=ff(d,a,b,c,x[i+5],12,1200080426);
+      c=ff(c,d,a,b,x[i+6],17,-1473231341); b=ff(b,c,d,a,x[i+7],22,-45705983);
+      a=ff(a,b,c,d,x[i+8], 7,1770035416);  d=ff(d,a,b,c,x[i+9],12,-1958414417);
+      c=ff(c,d,a,b,x[i+10],17,-42063);     b=ff(b,c,d,a,x[i+11],22,-1990404162);
+      a=ff(a,b,c,d,x[i+12],7,1804603682);  d=ff(d,a,b,c,x[i+13],12,-40341101);
+      c=ff(c,d,a,b,x[i+14],17,-1502002290);b=ff(b,c,d,a,x[i+15],22,1236535329);
+      a=gg(a,b,c,d,x[i+1], 5,-165796510);  d=gg(d,a,b,c,x[i+6], 9,-1069501632);
+      c=gg(c,d,a,b,x[i+11],14,643717713);  b=gg(b,c,d,a,x[i+0],20,-373897302);
+      a=gg(a,b,c,d,x[i+5], 5,-701558691);  d=gg(d,a,b,c,x[i+10],9,38016083);
+      c=gg(c,d,a,b,x[i+15],14,-660478335); b=gg(b,c,d,a,x[i+4],20,-405537848);
+      a=gg(a,b,c,d,x[i+9], 5,568446438);   d=gg(d,a,b,c,x[i+14],9,-1019803690);
+      c=gg(c,d,a,b,x[i+3],14,-187363961);  b=gg(b,c,d,a,x[i+8],20,1163531501);
+      a=gg(a,b,c,d,x[i+13],5,-1444681467); d=gg(d,a,b,c,x[i+2], 9,-51403784);
+      c=gg(c,d,a,b,x[i+7],14,1735328473);  b=gg(b,c,d,a,x[i+12],20,-1926607734);
+      a=hh(a,b,c,d,x[i+5], 4,-378558);     d=hh(d,a,b,c,x[i+8],11,-2022574463);
+      c=hh(c,d,a,b,x[i+11],16,1839030562); b=hh(b,c,d,a,x[i+14],23,-35309556);
+      a=hh(a,b,c,d,x[i+1], 4,-1530992060); d=hh(d,a,b,c,x[i+4],11,1272893353);
+      c=hh(c,d,a,b,x[i+7],16,-155497632);  b=hh(b,c,d,a,x[i+10],23,-1094730640);
+      a=hh(a,b,c,d,x[i+13],4,681279174);   d=hh(d,a,b,c,x[i+0],11,-358537222);
+      c=hh(c,d,a,b,x[i+3],16,-722521979);  b=hh(b,c,d,a,x[i+6],23,76029189);
+      a=hh(a,b,c,d,x[i+9], 4,-640364487);  d=hh(d,a,b,c,x[i+12],11,-421815835);
+      c=hh(c,d,a,b,x[i+15],16,530742520);  b=hh(b,c,d,a,x[i+2],23,-995338651);
+      a=ii(a,b,c,d,x[i+0], 6,-198630844);  d=ii(d,a,b,c,x[i+7],10,1126891415);
+      c=ii(c,d,a,b,x[i+14],15,-1416354905);b=ii(b,c,d,a,x[i+5],21,-57434055);
+      a=ii(a,b,c,d,x[i+12],6,1700485571);  d=ii(d,a,b,c,x[i+3],10,-1894986606);
+      c=ii(c,d,a,b,x[i+10],15,-1051523);   b=ii(b,c,d,a,x[i+1],21,-2054922799);
+      a=ii(a,b,c,d,x[i+8], 6,1873313359);  d=ii(d,a,b,c,x[i+15],10,-30611744);
+      c=ii(c,d,a,b,x[i+6],15,-1560198380); b=ii(b,c,d,a,x[i+13],21,1309151649);
+      a=ii(a,b,c,d,x[i+4], 6,-145523070);  d=ii(d,a,b,c,x[i+11],10,-1120210379);
+      c=ii(c,d,a,b,x[i+2],15,718787259);   b=ii(b,c,d,a,x[i+9],21,-343485551);
+      a=safeAdd(a,oa); b=safeAdd(b,ob); c=safeAdd(c,oc); d=safeAdd(d,od);
     }
-    
-    // 第三步：转换为正数并添加时间戳部分
-    hash = Math.abs(hash);
-    const timePart = timestamp.toString().slice(-6);
-    
-    // 第四步：生成最终密钥格式
-    // 格式：服务ID-哈希值-时间戳后6位-价格编码
-    const priceCode = Math.floor(price * 10).toString(36).toUpperCase();
-    const hashCode = hash.toString(36).toUpperCase().padStart(8, '0');
-    
-    const key = `${currentOrder.serviceId.toUpperCase()}-${hashCode}-${timePart}-${priceCode}`;
-    
-    return key;
+    return [a,b,c,d];
+  }
+  const enc = unescape(encodeURIComponent(str));
+  return b2h(core(s2b(enc), enc.length * 8));
 }
 
-// 验证密钥的离线算法（供您参考，可以用其他语言实现）
-function verifyServiceKey(key) {
-    // 密钥格式：服务ID-哈希值-时间戳-价格编码
-    const parts = key.split('-');
-    if (parts.length !== 4) return false;
-    
-    const [serviceId, hashCode, timePart, priceCode] = parts;
-    
-    // 验证服务ID是否有效
-    const validServices = ['SERVICE1', 'SERVICE2', 'SERVICE3'];
-    if (!validServices.includes(serviceId)) return false;
-    
-    // 验证格式
-    if (hashCode.length !== 8) return false;
-    if (timePart.length !== 6) return false;
-    
-    // 可以添加更多验证逻辑，比如时间戳是否在合理范围内
-    const timestamp = parseInt(timePart);
-    if (isNaN(timestamp)) return false;
-    
-    return true;
+// ============================================================
+// 易支付签名（ASCII升序排序，拼接key后MD5）
+// ============================================================
+function generateSign(params) {
+  const pairs = Object.entries(params)
+    .filter(([k, v]) => v !== '' && v != null && k !== 'sign' && k !== 'sign_type')
+    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0);
+  return md5(pairs.map(([k, v]) => `${k}=${v}`).join('&') + EPAY_CONFIG.key);
 }
 
-// 处理购买按钮点击
+// ============================================================
+// 订单号（末尾偶数 → 易支付路由到伪装站）
+// ============================================================
+function genOrderId() {
+  const base = Date.now().toString() + Math.floor(Math.random() * 900 + 100);
+  const last  = parseInt(base.slice(-1));
+  const even  = last % 2 === 0 ? last : (last + 1 > 9 ? 0 : last + 1);
+  return base.slice(0, -1) + even;
+}
+
+// ============================================================
+// 服务密钥生成
+// ============================================================
+function generateServiceKey(orderId, serviceId, price) {
+  const ts   = Date.now();
+  const base = `${orderId}-${serviceId}-${ts}-${price}`;
+  let h = 0;
+  for (let i = 0; i < base.length; i++) { h = ((h << 5) - h) + base.charCodeAt(i); h |= 0; }
+  h = Math.abs(h);
+  return [
+    serviceId.toUpperCase(),
+    h.toString(36).toUpperCase().padStart(8, '0'),
+    ts.toString().slice(-6),
+    Math.floor(price * 10).toString(36).toUpperCase()
+  ].join('-');
+}
+
+// ============================================================
+// Loading 遮罩
+// ============================================================
+function showLoading(msg) {
+  let el = document.getElementById('loadingOverlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loadingOverlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;z-index:9999;';
+    el.innerHTML = `<div style="background:#fff;border-radius:14px;padding:36px 52px;text-align:center;">
+      <div style="width:42px;height:42px;border:4px solid #e8f5e9;border-top-color:#4caf50;border-radius:50%;animation:_ld .8s linear infinite;margin:0 auto 18px"></div>
+      <p id="loadingMsg" style="margin:0;font-size:15px;color:#444"></p></div>`;
+    const s = document.createElement('style');
+    s.textContent = '@keyframes _ld{to{transform:rotate(360deg)}}';
+    document.head.appendChild(s);
+    document.body.appendChild(el);
+  }
+  document.getElementById('loadingMsg').textContent = msg;
+  el.style.display = 'flex';
+}
+function hideLoading() {
+  const el = document.getElementById('loadingOverlay');
+  if (el) el.style.display = 'none';
+}
+
+// ============================================================
+// Modal 辅助
+// ============================================================
+function showModal(id) { document.getElementById(id).style.display = 'block'; }
+function hideModal(id) { document.getElementById(id).style.display = 'none'; }
+function closePaymentModal() { hideModal('paymentModal'); }
+function closeSuccessModal() { hideModal('successModal'); }
+function closeQrModal() { stopPoll(); hideModal('qrModal'); }
+
+// ============================================================
+// 购买按钮入口
+// ============================================================
 function handlePurchase(serviceName, price, serviceId) {
-    currentOrder = {
-        serviceName: serviceName,
-        price: price,
-        serviceId: serviceId
-    };
-    
-    // 显示支付弹窗
-    document.getElementById('modalService').textContent = `服务：${serviceName}`;
-    document.getElementById('modalPrice').textContent = `金额：¥${price}`;
-    document.getElementById('paymentModal').style.display = 'block';
+  currentOrder = { serviceName, price, serviceId };
+  document.getElementById('modalService').textContent = `服务：${serviceName}`;
+  document.getElementById('modalPrice').textContent   = `金额：¥${price}`;
+  showModal('paymentModal');
 }
 
-// 关闭支付弹窗
-function closePaymentModal() {
-    document.getElementById('paymentModal').style.display = 'none';
-}
-
-// 关闭成功弹窗
-function closeSuccessModal() {
-    document.getElementById('successModal').style.display = 'none';
-}
-
-// 使用指定支付方式支付
-function payWithMethod(method) {
-    // 生成订单号
-    const orderId = 'ORDER' + Date.now() + Math.floor(Math.random() * 1000);
-    
-    // 关闭支付方式选择弹窗
-    closePaymentModal();
-    
-    // 显示加载提示
-    const loadingMsg = document.createElement('div');
-    loadingMsg.id = 'loadingMsg';
-    loadingMsg.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.8);color:#fff;padding:20px 40px;border-radius:10px;z-index:10000;font-size:16px;';
-    loadingMsg.textContent = '正在跳转到支付页面...';
-    document.body.appendChild(loadingMsg);
-    
-    // 发送请求到Cloudflare Worker获取支付链接
-    fetch(EPAY_CONFIG.apiUrl, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            type: method,
-            out_trade_no: orderId,
-            name: currentOrder.serviceName,
-            money: currentOrder.price,
-            return_url: EPAY_CONFIG.returnUrl,
-            notify_url: '',
-            sitename: '商务咨询服务平台'
-        })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('网络请求失败: ' + response.status);
-        }
-        return response.json();
-    })
-    .then(data => {
-        // 移除加载提示
-        const loading = document.getElementById('loadingMsg');
-        if (loading) loading.remove();
-        
-        // 调试信息：打印返回的数据
-        console.log('Worker返回数据:', data);
-        
-        if (data.debug) {
-            console.log('调试信息:');
-            console.log('- 签名字符串:', data.debug.signString);
-            console.log('- 签名值:', data.debug.sign);
-            console.log('- 参数:', data.debug.params);
-        }
-        
-        if (data.success && data.payUrl) {
-            // 保存订单信息到localStorage
-            localStorage.setItem('pendingOrder', JSON.stringify({
-                orderId: orderId,
-                serviceName: currentOrder.serviceName,
-                price: currentOrder.price,
-                serviceId: currentOrder.serviceId,
-                timestamp: Date.now()
-            }));
-            
-            console.log('即将跳转到支付页面:', data.payUrl);
-            
-            // 跳转到支付页面
-            window.location.href = data.payUrl;
-        } else {
-            console.error('支付请求失败:', data);
-            alert('支付请求失败：' + (data.error || '未知错误'));
-        }
-    })
-    .catch(error => {
-        // 移除加载提示
-        const loading = document.getElementById('loadingMsg');
-        if (loading) loading.remove();
-        
-        console.error('支付请求错误:', error);
-        alert('支付请求失败，请检查网络连接或稍后重试\n错误信息: ' + error.message);
+// ============================================================
+// 发起支付 → 直连易支付 mapi.php
+// ============================================================
+async function payWithMethod(method) {
+  if (!EPAY_CONFIG.key) {
+    alert('支付配置未初始化，请联系管理员');
+    return;
+  }
+  hideModal('paymentModal');
+  showLoading('正在创建订单…');
+  const orderId = genOrderId();
+  const params = {
+    pid:          EPAY_CONFIG.pid,
+    type:         method,
+    out_trade_no: orderId,
+    notify_url:   EPAY_CONFIG.notifyUrl,
+    return_url:   EPAY_CONFIG.returnUrl,
+    name:         currentOrder.serviceName,
+    money:        currentOrder.price.toFixed(2),
+    clientip:     '127.0.0.1',
+    device:       'pc'
+  };
+  params.sign      = generateSign(params);
+  params.sign_type = 'MD5';
+  try {
+    const resp = await fetch(`${EPAY_CONFIG.apiUrl}/mapi.php`, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body:    new URLSearchParams(params).toString()
     });
+    const data = await resp.json();
+    hideLoading();
+    if (data.code !== 1) { alert('下单失败：' + (data.msg || '未知错误')); return; }
+    localStorage.setItem('pendingOrder', JSON.stringify({
+      orderId,
+      serviceName: currentOrder.serviceName,
+      price:       currentOrder.price,
+      serviceId:   currentOrder.serviceId,
+      method,
+      ts:          Date.now()
+    }));
+    const qrcode = data.qrcode || '';
+    const payurl = data.payurl  || '';
+    if      (qrcode) showQrModal(qrcode, method, orderId);
+    else if (payurl) showPayUrlModal(payurl, orderId);
+    else             alert('易支付未返回支付信息，请稍后重试');
+  } catch (err) {
+    hideLoading();
+    alert('网络错误，请重试\n' + err.message);
+  }
 }
 
-// 生成易支付签名（仅在使用后端API时需要，静态托管不使用）
-function generateSign(params, key) {
-    // 此函数仅在配置了后端API时使用
-    // 静态托管模式下不需要此函数
-    const sortedKeys = Object.keys(params).sort();
-    let signStr = '';
-    
-    for (const k of sortedKeys) {
-        if (params[k] && k !== 'sign' && k !== 'sign_type') {
-            signStr += k + '=' + params[k] + '&';
-        }
+// ============================================================
+// 二维码弹窗
+// ============================================================
+function showQrModal(qrcodeUrl, method, orderId) {
+  const label = method === 'alipay' ? '支付宝' : '微信';
+  document.getElementById('qrTip').textContent = `请使用${label}「扫一扫」完成支付`;
+  document.getElementById('qrJumpArea').style.display   = 'none';
+  document.getElementById('qrCanvasArea').style.display = 'block';
+  const container = document.getElementById('qrCodeContainer');
+  container.innerHTML = '';
+  new QRCode(container, { text: qrcodeUrl, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  showModal('qrModal');
+  startPoll(orderId);
+}
+
+// ============================================================
+// 跳转链接弹窗（payurl 场景）
+// ============================================================
+function showPayUrlModal(payurl, orderId) {
+  document.getElementById('qrTip').textContent = '点击下方按钮跳转至支付宝完成支付';
+  document.getElementById('qrCanvasArea').style.display = 'none';
+  document.getElementById('qrJumpArea').style.display   = 'block';
+  document.getElementById('jumpPayBtn').href = payurl;
+  showModal('qrModal');
+  startPoll(orderId);
+}
+
+// ============================================================
+// 轮询订单状态（每5秒查询易支付 api.php）
+// ============================================================
+function startPoll(orderId) {
+  stopPoll();
+  pollCount = 0;
+  pollTimer = setInterval(() => pollOrder(orderId), POLL_INTERVAL);
+}
+function stopPoll() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+async function pollOrder(orderId) {
+  pollCount++;
+  if (pollCount > POLL_MAX) {
+    stopPoll();
+    document.getElementById('qrTip').textContent = '订单已超时，请重新下单';
+    return;
+  }
+  try {
+    const url = `${EPAY_CONFIG.apiUrl}/api.php?act=order&pid=${EPAY_CONFIG.pid}&key=${EPAY_CONFIG.key}&out_trade_no=${orderId}`;
+    const resp = await fetch(url);
+    const data = await resp.json();
+    if (data.code === 1 && String(data.status) === '1') {
+      stopPoll();
+      closeQrModal();
+      showSuccess(orderId);
     }
-    
-    signStr += key;
-    return md5(signStr);
+  } catch (_) { /* 网络抖动，忽略继续轮询 */ }
 }
 
-// MD5函数（仅在使用后端API时需要）
-function md5(string) {
-    // 如果使用后端API模式，需要引入crypto-js库
-    // <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    // return CryptoJS.MD5(string).toString();
-    
-    // 静态托管模式下不需要MD5
-    console.warn('静态托管模式下不需要MD5签名');
-    return '';
+// ============================================================
+// 支付成功 → 生成密钥并显示
+// ============================================================
+function showSuccess(orderId) {
+  const raw = localStorage.getItem('pendingOrder');
+  let serviceId = 'service1', price = 0, serviceName = '';
+  if (raw) {
+    try {
+      const o    = JSON.parse(raw);
+      serviceId   = o.serviceId   || serviceId;
+      price       = o.price       || price;
+      serviceName = o.serviceName || serviceName;
+    } catch(_) {}
+    localStorage.removeItem('pendingOrder');
+  }
+  const key = generateServiceKey(orderId, serviceId, price);
+  document.getElementById('serviceKey').textContent = key;
+  document.getElementById('successQQ').textContent  = CUSTOMER_QQ;
+  showModal('successModal');
+  // 本地存档
+  const orders = JSON.parse(localStorage.getItem('orders') || '[]');
+  orders.push({ orderId, serviceName, price, serviceId, key, ts: Date.now(), qq: CUSTOMER_QQ });
+  localStorage.setItem('orders', JSON.stringify(orders));
 }
 
-// 模拟支付成功（实际应用中应该通过URL参数判断）
-function simulatePaymentSuccess(orderId) {
-    // 生成服务密钥
-    const timestamp = Date.now();
-    const serviceKey = generateServiceKey(
-        orderId,
-        currentOrder.serviceName,
-        timestamp,
-        currentOrder.price
-    );
-    
-    // 显示成功弹窗
-    document.getElementById('serviceKey').textContent = serviceKey;
-    document.getElementById('successModal').style.display = 'block';
-    
-    // 可以将订单信息保存到localStorage
-    saveOrderToLocal(orderId, serviceKey);
+// ============================================================
+// 页面加载：处理易支付 return_url 回跳
+// ============================================================
+function checkReturnCallback() {
+  const p            = new URLSearchParams(window.location.search);
+  const tradeStatus  = p.get('trade_status');
+  const outTradeNo   = p.get('out_trade_no');
+  if (tradeStatus === 'TRADE_SUCCESS' && outTradeNo) {
+    window.history.replaceState({}, document.title, window.location.pathname);
+    showSuccess(outTradeNo);
+  }
 }
 
-// 保存订单到本地存储
-function saveOrderToLocal(orderId, serviceKey) {
-    const order = {
-        orderId: orderId,
-        serviceName: currentOrder.serviceName,
-        price: currentOrder.price,
-        serviceId: currentOrder.serviceId,
-        serviceKey: serviceKey,
-        timestamp: Date.now(),
-        customerQQ: CUSTOMER_QQ
-    };
-    
-    // 获取现有订单
-    let orders = JSON.parse(localStorage.getItem('orders') || '[]');
-    orders.push(order);
-    localStorage.setItem('orders', JSON.stringify(orders));
-}
+window.addEventListener('load', checkReturnCallback);
 
-// 检查URL参数，判断是否是支付回调
-function checkPaymentCallback() {
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // 易支付回调参数示例：trade_no, out_trade_no, type, name, money, trade_status
-    const tradeStatus = urlParams.get('trade_status');
-    const outTradeNo = urlParams.get('out_trade_no');
-    
-    if (tradeStatus === 'TRADE_SUCCESS' && outTradeNo) {
-        // 支付成功，从localStorage获取订单信息
-        const pendingOrder = localStorage.getItem('pendingOrder');
-        
-        if (pendingOrder) {
-            const orderData = JSON.parse(pendingOrder);
-            
-            // 验证订单号是否匹配
-            if (orderData.orderId === outTradeNo) {
-                currentOrder = {
-                    serviceName: orderData.serviceName,
-                    price: orderData.price,
-                    serviceId: orderData.serviceId
-                };
-                
-                // 显示支付成功页面
-                simulatePaymentSuccess(outTradeNo);
-                
-                // 清除待处理订单
-                localStorage.removeItem('pendingOrder');
-            }
-        } else {
-            // 如果没有找到订单信息，尝试从URL参数获取
-            const name = urlParams.get('name');
-            const money = urlParams.get('money');
-            
-            // 根据订单名称匹配服务
-            let serviceId = 'service1';
-            if (name && name.includes('公司业务')) {
-                serviceId = 'service2';
-            } else if (name && name.includes('代理记账')) {
-                serviceId = 'service3';
-            }
-            
-            currentOrder = {
-                serviceName: name || '未知服务',
-                price: parseFloat(money) || 0,
-                serviceId: serviceId
-            };
-            
-            simulatePaymentSuccess(outTradeNo);
-        }
-        
-        // 清除URL参数
-        window.history.replaceState({}, document.title, window.location.pathname);
-    }
-}
-
-// 页面加载时检查是否是支付回调
-window.addEventListener('load', () => {
-    checkPaymentCallback();
-});
-
-// 点击弹窗外部关闭弹窗
-window.onclick = function(event) {
-    const paymentModal = document.getElementById('paymentModal');
-    const successModal = document.getElementById('successModal');
-    
-    if (event.target === paymentModal) {
-        closePaymentModal();
-    }
-    if (event.target === successModal) {
-        closeSuccessModal();
-    }
-}
-
+// 点击弹窗背景关闭
+window.onclick = function(e) {
+  if (e.target === document.getElementById('paymentModal'))  closePaymentModal();
+  if (e.target === document.getElementById('qrModal'))       closeQrModal();
+  if (e.target === document.getElementById('successModal'))  closeSuccessModal();
+};

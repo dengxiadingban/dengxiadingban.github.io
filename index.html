@@ -114,6 +114,27 @@
         </div>
     </div>
 
+    <!-- 二维码 / 跳转支付弹窗 -->
+    <div id="qrModal" class="modal">
+        <div class="modal-content" style="text-align:center;max-width:320px;">
+            <span class="close" onclick="closeQrModal()">&times;</span>
+            <h3 style="margin-bottom:12px;">完成支付</h3>
+            <!-- 二维码区域 -->
+            <div id="qrCanvasArea">
+                <div id="qrCodeContainer" style="display:inline-block;padding:8px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;"></div>
+            </div>
+            <!-- 跳转按钮区域（payurl 场景） -->
+            <div id="qrJumpArea" style="display:none;margin:20px 0;">
+                <a id="jumpPayBtn" href="#" target="_blank"
+                   style="display:inline-block;padding:14px 36px;background:#1677ff;color:#fff;border-radius:8px;text-decoration:none;font-size:16px;font-weight:600;">
+                    点击跳转支付页面
+                </a>
+            </div>
+            <p id="qrTip" style="margin:14px 0 4px;color:#555;font-size:14px;"></p>
+            <p style="font-size:12px;color:#aaa;margin:0;">支付完成后页面将自动跳转</p>
+        </div>
+    </div>
+
     <!-- 支付成功弹窗 -->
     <div id="successModal" class="modal">
         <div class="modal-content success-content">
@@ -123,7 +144,7 @@
                 <p class="info-label">您的服务密钥：</p>
                 <div class="key-box" id="serviceKey"></div>
                 <p class="info-label">客服QQ号：</p>
-                <div class="qq-box">2871431784</div>
+                <div class="qq-box" id="successQQ">2871431784</div>
                 <div class="instructions">
                     <p>请添加客服QQ并发送您的密钥，我们将立即为您提供服务。</p>
                     <p class="note">请妥善保管您的密钥，这是您享受服务的凭证。</p>
@@ -154,10 +175,11 @@
         </div>
         <div class="footer-bottom">
             <p>© 2026 灯下鼎办商务咨询服务部(个体工商户) All Rights Reserved</p>
-            <p>京ICP备12345678号</p>
         </div>
     </footer>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="config.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
