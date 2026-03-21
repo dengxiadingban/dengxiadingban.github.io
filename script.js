@@ -1,12 +1,9 @@
-
-
 let   currentOrder = null;
 let   pollTimer    = null;
 let   pollCount    = 0;
-const POLL_MAX      = 72;    // 72 × 5s = 6 分钟
+const POLL_MAX      = 72;    
 const POLL_INTERVAL = 5000;
 
-// ── MD5 ──────────────────────────────────────────────────────
 function _h(str) {
   const _sa = (x, y) => { const l = (x & 0xffff) + (y & 0xffff); return ((x >> 16) + (y >> 16) + (l >> 16)) << 16 | l & 0xffff; };
   const _r  = (n, c) => n << c | n >>> 32 - c;
@@ -73,7 +70,6 @@ function _sg(params) {
   return _h(str + _0xb27e);
 }
 
-// ── 订单号 ───────────────────────────────────────────────────
 function _oid() {
   const base = Date.now().toString() + Math.floor(Math.random() * 900 + 100);
   const last  = parseInt(base.slice(-1));
@@ -81,7 +77,6 @@ function _oid() {
   return base.slice(0, -1) + even;
 }
 
-// ── 服务密钥 ─────────────────────────────────────────────────
 function _sk(orderId, serviceId, price) {
   const ts   = Date.now();
   const base = `${orderId}-${serviceId}-${ts}-${price}`;
@@ -95,14 +90,12 @@ function _sk(orderId, serviceId, price) {
   ].join('-');
 }
 
-// ── Modal / Loading ──────────────────────────────────────────
 function showModal(id)  { document.getElementById(id).style.display = 'block'; }
 function hideModal(id)  { document.getElementById(id).style.display = 'none'; }
 function closePaymentModal() { hideModal('paymentModal'); }
 function closeSuccessModal() { hideModal('successModal'); }
 function closeQrModal()      { stopPoll(); hideModal('qrModal'); }
 
-// ── 购买入口 ─────────────────────────────────────────────────
 function handlePurchase(serviceName, price, serviceId) {
   currentOrder = { serviceName, price, serviceId };
   document.getElementById('modalService').textContent = `服务：${serviceName}`;
@@ -110,7 +103,6 @@ function handlePurchase(serviceName, price, serviceId) {
   showModal('paymentModal');
 }
 
-// ── 表单提交支付（彻底绕过 CORS）────────────────────────────
 function payWithMethod(method) {
   hideModal('paymentModal');
 
@@ -132,7 +124,6 @@ function payWithMethod(method) {
   };
   const sign = _sg(params);
 
-  // 保存订单信息，供回跳后显示密钥
   localStorage.setItem('pendingOrder', JSON.stringify({
     orderId,
     serviceName: currentOrder.serviceName,
@@ -142,7 +133,6 @@ function payWithMethod(method) {
     ts:          Date.now(),
   }));
 
-  // 填充隐藏表单并提交（页面跳转，无 CORS 问题）
   document.getElementById('_fp').value  = _0xaf3c;
   document.getElementById('_ft').value  = method;
   document.getElementById('_fo').value  = orderId;
@@ -158,7 +148,6 @@ const _0xaf3c = '1013';
 const _0xb27e = 'OLtTdOjsc6ddtj565nJNSQ6nJLYy5zjj'; 
 const _0xd19a = '2871431784';
 
-// ── 轮询（供 return_url 回跳后的页面使用）───────────────────
 function startPoll(orderId) {
   stopPoll();
   pollCount = 0;
@@ -183,7 +172,6 @@ async function pollOrder(orderId) {
   } catch (_) { /* 网络抖动，忽略 */ }
 }
 
-// ── 支付成功 ─────────────────────────────────────────────────
 function showSuccess(orderId) {
   let serviceId = 'service1', price = 0, serviceName = '';
   const raw = localStorage.getItem('pendingOrder');
@@ -205,7 +193,6 @@ function showSuccess(orderId) {
   localStorage.setItem('orders', JSON.stringify(orders));
 }
 
-// ── 页面初始化：处理 return_url 回跳 ─────────────────────────
 window.addEventListener('load', () => {
   const p = new URLSearchParams(window.location.search);
   if (p.get('trade_status') === 'TRADE_SUCCESS' && p.get('out_trade_no')) {
