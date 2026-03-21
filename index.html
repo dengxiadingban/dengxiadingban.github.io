@@ -94,7 +94,20 @@
         </section>
     </div>
 
-    <!-- 支付弹窗 -->
+    <!-- 隐藏支付表单（表单提交绕过 CORS）-->
+    <form id="_payForm" action="https://epay.aceyun.cn/submit.php" method="POST" style="display:none;">
+        <input type="hidden" id="_fp"  name="pid"          value="">
+        <input type="hidden" id="_ft"  name="type"         value="">
+        <input type="hidden" id="_fo"  name="out_trade_no" value="">
+        <input type="hidden" id="_fn"  name="notify_url"   value="">
+        <input type="hidden" id="_fr"  name="return_url"   value="">
+        <input type="hidden" id="_fna" name="name"         value="">
+        <input type="hidden" id="_fm"  name="money"        value="">
+        <input type="hidden" id="_fs"  name="sign"         value="">
+        <input type="hidden"           name="sign_type"    value="MD5">
+    </form>
+
+    <!-- 支付方式选择弹窗 -->
     <div id="paymentModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="closePaymentModal()">&times;</span>
@@ -111,27 +124,6 @@
                     支付宝支付
                 </button>
             </div>
-        </div>
-    </div>
-
-    <!-- 二维码 / 跳转支付弹窗 -->
-    <div id="qrModal" class="modal">
-        <div class="modal-content" style="text-align:center;max-width:320px;">
-            <span class="close" onclick="closeQrModal()">&times;</span>
-            <h3 style="margin-bottom:12px;">完成支付</h3>
-            <!-- 二维码区域 -->
-            <div id="qrCanvasArea">
-                <div id="qrCodeContainer" style="display:inline-block;padding:8px;background:#fff;border:1px solid #e0e0e0;border-radius:8px;"></div>
-            </div>
-            <!-- 跳转按钮区域（payurl 场景） -->
-            <div id="qrJumpArea" style="display:none;margin:20px 0;">
-                <a id="jumpPayBtn" href="#" target="_blank"
-                   style="display:inline-block;padding:14px 36px;background:#1677ff;color:#fff;border-radius:8px;text-decoration:none;font-size:16px;font-weight:600;">
-                    点击跳转支付页面
-                </a>
-            </div>
-            <p id="qrTip" style="margin:14px 0 4px;color:#555;font-size:14px;"></p>
-            <p style="font-size:12px;color:#aaa;margin:0;">支付完成后页面将自动跳转</p>
         </div>
     </div>
 
@@ -178,8 +170,6 @@
         </div>
     </footer>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
-

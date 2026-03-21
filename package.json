@@ -1,14 +1,8 @@
 {
   "name": "business-consulting-payment",
   "version": "1.0.0",
-  "description": "商务咨询服务支付系统 - Cloudflare Pages + Worker 部署",
+  "description": "商务咨询服务支付系统 - Cloudflare Pages 部署",
   "main": "index.html",
-  "scripts": {
-    "deploy:pages": "wrangler pages deploy .",
-    "deploy:worker": "wrangler deploy",
-    "deploy": "npm run deploy:worker && npm run deploy:pages",
-    "dev:worker": "wrangler dev"
-  },
   "keywords": ["cloudflare", "payment", "epay"],
   "author": "",
   "license": "MIT"
