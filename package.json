@@ -1,12 +1,13 @@
 {
   "name": "business-consulting-payment",
   "version": "1.0.0",
-  "description": "Cloudflare Worker for payment signature",
-  "main": "worker.js",
+  "description": "商务咨询服务支付系统 - Cloudflare Pages 部署",
+  "main": "index.html",
   "scripts": {
-    "deploy": "wrangler publish"
+    "build": "node build.js",
+    "deploy": "npm run build && wrangler pages deploy ."
   },
-  "keywords": ["cloudflare", "worker", "payment"],
+  "keywords": ["cloudflare", "payment", "epay"],
   "author": "",
   "license": "MIT"
 }

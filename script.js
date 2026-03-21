@@ -1,12 +1,11 @@
 // ============================================================
 // 易支付配置
-// key 通过 config.js 注入（部署时由构建脚本或手动维护）
-// config.js 格式：window.EPAY_KEY = 'your_real_key';
+// key 和 pid 通过 config.js 注入（部署时由构建脚本自动替换）
 // ============================================================
 const EPAY_CONFIG = {
   apiUrl:    'https://epay.aceyun.cn',
-  pid:       '1013',
-  get key()  { return (window.EPAY_KEY || ''); },
+  get pid()  { return (window.EPAY_CONFIG_INJECTED?.pid || '1013'); },
+  get key()  { return (window.EPAY_CONFIG_INJECTED?.key || ''); },
   notifyUrl: window.location.origin + '/notify_success.txt',
   returnUrl: window.location.href.split('?')[0]
 };
@@ -173,7 +172,7 @@ function handlePurchase(serviceName, price, serviceId) {
 }
 
 // ============================================================
-// 发起支付 → 直连易支付 mapi.php
+// 发起支付 → 直连易支付 mapi.php（带重试机制）
 // ============================================================
 async function payWithMethod(method) {
   if (!EPAY_CONFIG.key) {
@@ -196,32 +195,60 @@ async function payWithMethod(method) {
   };
   params.sign      = generateSign(params);
   params.sign_type = 'MD5';
-  try {
-    const resp = await fetch(`${EPAY_CONFIG.apiUrl}/mapi.php`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body:    new URLSearchParams(params).toString()
-    });
-    const data = await resp.json();
-    hideLoading();
-    if (data.code !== 1) { alert('下单失败：' + (data.msg || '未知错误')); return; }
-    localStorage.setItem('pendingOrder', JSON.stringify({
-      orderId,
-      serviceName: currentOrder.serviceName,
-      price:       currentOrder.price,
-      serviceId:   currentOrder.serviceId,
-      method,
-      ts:          Date.now()
-    }));
-    const qrcode = data.qrcode || '';
-    const payurl = data.payurl  || '';
-    if      (qrcode) showQrModal(qrcode, method, orderId);
-    else if (payurl) showPayUrlModal(payurl, orderId);
-    else             alert('易支付未返回支付信息，请稍后重试');
-  } catch (err) {
-    hideLoading();
-    alert('网络错误，请重试\n' + err.message);
+  
+  // 重试机制：最多重试3次
+  let retryCount = 0;
+  const maxRetries = 3;
+  
+  async function attemptPayment() {
+    try {
+      const resp = await fetch(`${EPAY_CONFIG.apiUrl}/mapi.php`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body:    new URLSearchParams(params).toString(),
+        timeout: 10000
+      });
+      
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}: ${resp.statusText}`);
+      }
+      
+      const data = await resp.json();
+      hideLoading();
+      
+      if (data.code !== 1) {
+        alert('下单失败：' + (data.msg || '未知错误'));
+        return;
+      }
+      
+      localStorage.setItem('pendingOrder', JSON.stringify({
+        orderId,
+        serviceName: currentOrder.serviceName,
+        price:       currentOrder.price,
+        serviceId:   currentOrder.serviceId,
+        method,
+        ts:          Date.now()
+      }));
+      
+      const qrcode = data.qrcode || '';
+      const payurl = data.payurl  || '';
+      if      (qrcode) showQrModal(qrcode, method, orderId);
+      else if (payurl) showPayUrlModal(payurl, orderId);
+      else             alert('易支付未返回支付信息，请稍后重试');
+    } catch (err) {
+      retryCount++;
+      if (retryCount < maxRetries) {
+        showLoading(`正在创建订单…（重试 ${retryCount}/${maxRetries - 1}）`);
+        await new Promise(resolve => setTimeout(resolve, 1000 * retryCount));
+        return attemptPayment();
+      } else {
+        hideLoading();
+        alert(`网络错误，请重试\n${err.message}`);
+      }
+    }
   }
+  
+  return attemptPayment();
 }
 
 // ============================================================
@@ -267,11 +294,18 @@ async function pollOrder(orderId) {
   if (pollCount > POLL_MAX) {
     stopPoll();
     document.getElementById('qrTip').textContent = '订单已超时，请重新下单';
+    document.getElementById('qrTip').style.color = '#d32f2f';
+    // 清理超时订单
+    localStorage.removeItem('pendingOrder');
+    // 3秒后自动关闭弹窗
+    setTimeout(() => {
+      closeQrModal();
+    }, 3000);
     return;
   }
   try {
     const url = `${EPAY_CONFIG.apiUrl}/api.php?act=order&pid=${EPAY_CONFIG.pid}&key=${EPAY_CONFIG.key}&out_trade_no=${orderId}`;
-    const resp = await fetch(url);
+    const resp = await fetch(url, { timeout: 5000 });
     const data = await resp.json();
     if (data.code === 1 && String(data.status) === '1') {
       stopPoll();
