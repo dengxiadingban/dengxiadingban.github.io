@@ -60,7 +60,6 @@ function _h(str) {
   return _b2h(_core(_s2b(enc), enc.length * 8));
 }
 
-// ── 签名 ─────────────────────────────────────────────────────
 function _sg(params) {
   const str = Object.entries(params)
     .filter(([k, v]) => v !== '' && v != null && k !== 'sign' && k !== 'sign_type')
@@ -110,7 +109,7 @@ function payWithMethod(method) {
   const money   = currentOrder.price.toFixed(2);
   const name    = currentOrder.serviceName;
 
-  const notifyUrl = window.location.origin + '/notify_success.txt';
+  const notifyUrl = window.location.origin + '/notify';
   const returnUrl = window.location.href.split('?')[0];
 
   const params = {
