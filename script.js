@@ -109,7 +109,7 @@ function payWithMethod(method) {
   const money   = currentOrder.price.toFixed(2);
   const name    = currentOrder.serviceName;
 
-  const notifyUrl = window.location.origin + '/notify';
+  const notifyUrl = window.location.origin + '/notify.txt';
   const returnUrl = window.location.href.split('?')[0];
 
   const params = {
