@@ -4,49 +4,99 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>商务咨询服务 - 灯下鼎办</title>
+    <link rel="icon" type="image/webp" href="pub/favicon.webp">
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="container">
-        <!-- 企业介绍部分 -->
-        <section class="company-intro">
-            <div class="intro-content">
-                <h1 class="company-title">灯下鼎办商务咨询服务部</h1>
-                <p class="company-slogan">您身边的商务管家，助力企业成长</p>
-                <div class="intro-text">
-                    <p>我们是一家专注于为中小企业和个体工商户提供全方位商务咨询服务的专业机构。</p>
-                    <p>凭借丰厚的行业经验和专业知识，我们致力于为客户提供高效、专业、贴心的一站式商务解决方案。</p>
-                    <div class="features">
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>专业团队</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>快速响应</span>
-                        </div>
-                        <div class="feature-item">
-                            <span class="feature-icon">✓</span>
-                            <span>贴心服务</span>
-                        </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-inner">
+            <div class="nav-brand">
+                <span class="brand-icon">灯</span>
+                <span class="brand-name">灯下鼎办</span>
+            </div>
+            <div class="nav-tagline">商务咨询服务部</div>
+        </div>
+    </nav>
+
+    <!-- Hero 全屏首屏 -->
+    <section class="hero">
+        <div class="hero-bg">
+            <div class="hero-grid"></div>
+            <div class="hero-glow hero-glow-1"></div>
+            <div class="hero-glow hero-glow-2"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge">专业 · 高效 · 值得信赖</div>
+            <h1 class="hero-title">
+                <span class="hero-title-main">灯下鼎办</span>
+                <span class="hero-title-sub">商务咨询服务部</span>
+            </h1>
+            <p class="hero-desc">您身边的商务管家，助力企业稳健成长</p>
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <div class="hf-icon">◆</div>
+                    <div class="hf-text">
+                        <strong>专业团队</strong>
+                        <span>资深顾问坐镇</span>
+                    </div>
+                </div>
+                <div class="hero-feature">
+                    <div class="hf-icon">◆</div>
+                    <div class="hf-text">
+                        <strong>快速响应</strong>
+                        <span>当日回复承诺</span>
+                    </div>
+                </div>
+                <div class="hero-feature">
+                    <div class="hf-icon">◆</div>
+                    <div class="hf-text">
+                        <strong>贴心服务</strong>
+                        <span>全程跟进指导</span>
                     </div>
                 </div>
             </div>
-        </section>
+            <a href="#services" class="hero-cta">查看服务方案</a>
+        </div>
+        <div class="hero-scroll-hint">
+            <span>向下探索</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </section>
 
-        <!-- 付费服务部分 -->
-        <section class="services">
-            <h2 class="section-title">我们的服务</h2>
+    <!-- 简介条带 -->
+    <section class="intro-strip">
+        <div class="intro-strip-inner">
+            <p>我们是一家专注于为<strong>中小企业和个体工商户</strong>提供全方位商务咨询服务的专业机构，凭借丰厚的行业经验与专业知识，致力于为客户提供高效、专业、贴心的一站式商务解决方案。</p>
+        </div>
+    </section>
+
+    <!-- 服务区域 -->
+    <section class="services" id="services">
+        <div class="services-inner">
+            <div class="section-header">
+                <div class="section-label">SERVICE PACKAGES</div>
+                <h2 class="section-title">我们的服务</h2>
+                <p class="section-desc">精选三大服务套餐，覆盖企业全生命周期需求</p>
+            </div>
+
             <div class="service-cards">
                 <!-- 服务1 -->
                 <div class="service-card">
+                    <div class="card-accent"></div>
+                    <div class="service-tier">基础咨询</div>
                     <div class="service-header">
                         <h3>个体工商户业务咨询</h3>
-                        <div class="price">¥19.9</div>
+                        <div class="price"><span class="price-symbol">¥</span>19.9</div>
                     </div>
                     <div class="service-body">
                         <ul class="service-list">
                             <li>个体工商户注册流程指导</li>
+                            <li>小餐饮营业许可证指导</li>
                             <li>经营范围选择建议</li>
                             <li>税务登记咨询</li>
                             <li>日常经营问题解答</li>
@@ -57,9 +107,11 @@
 
                 <!-- 服务2 -->
                 <div class="service-card">
+                    <div class="card-accent"></div>
+                    <div class="service-tier">进阶咨询</div>
                     <div class="service-header">
                         <h3>公司业务咨询</h3>
-                        <div class="price">¥39.9</div>
+                        <div class="price"><span class="price-symbol">¥</span>39.9</div>
                     </div>
                     <div class="service-body">
                         <ul class="service-list">
@@ -74,10 +126,13 @@
                 </div>
 
                 <!-- 服务3 -->
-                <div class="service-card">
+                <div class="service-card service-card--featured">
+                    <div class="card-accent"></div>
+                    <div class="featured-badge">最受欢迎</div>
+                    <div class="service-tier">综合服务</div>
                     <div class="service-header">
                         <h3>代理记账与网站备案</h3>
-                        <div class="price">¥99.9</div>
+                        <div class="price"><span class="price-symbol">¥</span>99.9</div>
                     </div>
                     <div class="service-body">
                         <ul class="service-list">
@@ -91,9 +146,10 @@
                     <button class="buy-btn" onclick="handlePurchase('service3', 99.9, 'service3')">立即购买</button>
                 </div>
             </div>
-        </section>
-    </div>
+        </div>
+    </section>
 
+    <!-- 隐藏支付表单（不修改JS逻辑） -->
     <form id="_payForm" action="https://epay.aceyun.cn/submit.php" method="POST" style="display:none;">
         <input type="hidden" id="_fp"  name="pid"          value="">
         <input type="hidden" id="_ft"  name="type"         value="">
@@ -106,20 +162,27 @@
         <input type="hidden"           name="sign_type"    value="MD5">
     </form>
 
+    <!-- 支付方式弹窗 -->
     <div id="paymentModal" class="modal">
+        <div class="modal-overlay" onclick="closePaymentModal()"></div>
         <div class="modal-content">
-            <span class="close" onclick="closePaymentModal()">&times;</span>
-            <h3 id="modalTitle">选择支付方式</h3>
-            <p id="modalService"></p>
-            <p id="modalPrice"></p>
+            <button class="modal-close" onclick="closePaymentModal()">&#10005;</button>
+            <div class="modal-header">
+                <div class="modal-icon">&#9670;</div>
+                <h3 id="modalTitle">选择支付方式</h3>
+            </div>
+            <div class="modal-meta">
+                <p id="modalService"></p>
+                <p id="modalPrice"></p>
+            </div>
             <div class="payment-methods">
                 <button class="payment-btn wechat" onclick="payWithMethod('wxpay')">
-                    <span class="payment-icon">💚</span>
-                    微信支付
+                    <img src="pub/微信支付.webp" alt="微信支付" class="payment-logo">
+                    <span>微信支付</span>
                 </button>
                 <button class="payment-btn alipay" onclick="payWithMethod('alipay')">
-                    <span class="payment-icon">💙</span>
-                    支付宝支付
+                    <img src="pub/支付宝.webp" alt="支付宝" class="payment-logo">
+                    <span>支付宝支付</span>
                 </button>
             </div>
         </div>
@@ -127,14 +190,21 @@
 
     <!-- 支付成功弹窗 -->
     <div id="successModal" class="modal">
+        <div class="modal-overlay" onclick="closeSuccessModal()"></div>
         <div class="modal-content success-content">
-            <div class="success-icon">✓</div>
-            <h3>支付成功！</h3>
+            <div class="success-icon-wrap">
+                <div class="success-icon">&#10003;</div>
+            </div>
+            <h3 class="success-title">支付成功</h3>
             <div class="success-info">
-                <p class="info-label">您的服务密钥：</p>
-                <div class="key-box" id="serviceKey"></div>
-                <p class="info-label">客服QQ号：</p>
-                <div class="qq-box" id="successQQ">2871431784</div>
+                <div class="info-row">
+                    <p class="info-label">您的服务密钥</p>
+                    <div class="key-box" id="serviceKey"></div>
+                </div>
+                <div class="info-row">
+                    <p class="info-label">客服 QQ</p>
+                    <div class="qq-box" id="successQQ">2871431784</div>
+                </div>
                 <div class="instructions">
                     <p>请添加客服QQ并发送您的密钥，我们将立即为您提供服务。</p>
                     <p class="note">请妥善保管您的密钥，这是您享受服务的凭证。</p>
@@ -147,24 +217,29 @@
     <!-- 页脚 -->
     <footer class="footer">
         <div class="footer-content">
-            <div class="footer-section">
-                <h4>灯下鼎办商务咨询服务部</h4>
-                <p>专业 · 高效 · 贴心</p>
+            <div class="footer-brand">
+                <div class="footer-logo">
+                    <span class="brand-icon">灯</span>
+                    <span>灯下鼎办商务咨询服务部</span>
+                </div>
+                <p class="footer-slogan">专业 · 高效 · 贴心</p>
             </div>
-            <div class="footer-section">
-                <p>联系我们</p>
-                <p>客服QQ：2871431784</p>
-                <p>工作时间：9:00-17:00</p>
-            </div>
-            <div class="footer-section">
-                <p>服务范围</p>
-                <p>个体工商户咨询</p>
-                <p>公司业务咨询</p>
-                <p>代理记账与备案</p>
+            <div class="footer-cols">
+                <div class="footer-col">
+                    <h5>联系我们</h5>
+                    <p>客服QQ：2871431784</p>
+                    <p>工作时间：9:00 - 17:00</p>
+                </div>
+                <div class="footer-col">
+                    <h5>服务范围</h5>
+                    <p>个体工商户咨询</p>
+                    <p>公司业务咨询</p>
+                    <p>代理记账与备案</p>
+                </div>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>© 2026 灯下鼎办商务咨询服务部(个体工商户) All Rights Reserved</p>
+            <p>© 2026 灯下鼎办商务咨询服务部（个体工商户）All Rights Reserved</p>
         </div>
     </footer>
 
