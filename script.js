@@ -143,9 +143,13 @@ function payWithMethod(method) {
   document.getElementById('_payForm').submit();
 }
 
-const _0xaf3c = '1013';
-const _0xb27e = 'OLtTdOjsc6ddtj565nJNSQ6nJLYy5zjj'; 
-const _0xd19a = '2871431784';
+function _dx(data, key) {
+  return data.map(n => String.fromCharCode(n ^ key)).join('');
+}
+
+const _0xaf3c = _dx([38, 39, 38, 36], 23);
+const _0xb27e = _dx([92, 95, 103, 71, 119, 92, 121, 96, 112, 37, 119, 119, 103, 121, 38, 37, 38, 125, 89, 93, 64, 66, 37, 125, 89, 95, 74, 106, 38, 105, 121, 121], 19);
+const _0xd19a = _dx([47, 37, 42, 44, 41, 46, 44, 42, 37, 41], 29);
 
 function startPoll(orderId) {
   stopPoll();
