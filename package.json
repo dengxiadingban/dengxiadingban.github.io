@@ -1,0 +1,9 @@
+{
+  "name": "business-consulting-payment",
+  "version": "1.0.0",
+  "description": "商务咨询服务支付系统 - Cloudflare Pages 部署",
+  "main": "index.html",
+  "keywords": ["cloudflare", "payment", "epay"],
+  "author": "",
+  "license": "MIT"
+}
